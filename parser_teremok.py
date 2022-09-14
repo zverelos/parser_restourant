@@ -38,32 +38,33 @@ def collect_urls_positions(menu_list) -> List:
         driver.get(li_menu)
         sleep(5)
 
-    items_list = driver.find_elements(By.CSS_SELECTOR, "li.b-catalog__list-item")
+        items_list = driver.find_elements(By.CSS_SELECTOR, "li.b-catalog__list-item")
 
-    for i in items_list:
-        items.append(i.find_element(By.TAG_NAME, 'a').get_attribute('href'))
+        for i in items_list:
+            items.append(i.find_element(By.TAG_NAME, 'a').get_attribute('href'))
 
     return items
 
 
-def take_data_items(item):
-    response = requests.get(item)
+def take_data_items(items):
+    for item in items:
+        response = requests.get(item)
 
-    soup = BeautifulSoup(response.text, "html.parser")
-    attributes = {}
-    img_url = f'{MAIN_URL}{soup.find_all("picture", class_="b-detail-product__img")[0].contents[5].attrs["src"]}'
-    name = soup.find("h1").text
-    product_url = item
-    attributes.update({'name': name, 'product_url': product_url, 'img_url': img_url})
+        soup = BeautifulSoup(response.text, "html.parser")
+        attributes = {}
+        img_url = f'{MAIN_URL}{soup.find_all("picture", class_="b-detail-product__img")[0].contents[5].attrs["src"]}'
+        name = soup.find("h1").text
+        product_url = item
+        attributes.update({'name': name, 'product_url': product_url, 'img_url': img_url})
 
-    rows = soup.find_all("div", class_="b-detail-product__info-row")
+        rows = soup.find_all("div", class_="b-detail-product__info-row")
 
-    for k in rows[1:]:
-        product_property = k.contents[1].text
-        product_value = k.contents[5].text
-        attributes.update({product_property: product_value})
+        for k in rows[1:]:
+            product_property = k.contents[1].text
+            product_value = k.contents[5].text
+            attributes.update({product_property: product_value})
 
-    RESULT.append(attributes)
+        RESULT.append(attributes)
 
 
 def create_excel(RESULT):
@@ -72,6 +73,5 @@ def create_excel(RESULT):
 
 
 if __name__ == '__main__':
-    for i in collect_urls_positions(collect_urls_menu()):
-        take_data_items(i)
+    take_data_items(collect_urls_positions(collect_urls_menu()))
     create_excel(RESULT)
